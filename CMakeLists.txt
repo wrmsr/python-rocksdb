@@ -8,7 +8,7 @@ add_subdirectory(lib/pybind11)
 
 SET ( WITH_TESTS OFF CACHE BOOL "BUILD ROCKSDB WITH TEST" FORCE)
 SET ( WITH_SNAPPY ON CACHE BOOL "BUILD ROCKSDB WITH SNAPPY" FORCE)
-SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-deprecated-copy -Wno-pessimizing-move -Wno-sign-compare")
 SET (USE_RTTI ON)
 add_subdirectory(lib/rocksdb)
 
