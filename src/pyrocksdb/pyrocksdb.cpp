@@ -155,6 +155,12 @@ std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions& options) 
   return std::unique_ptr<IteratorWrapper>(new IteratorWrapper(db_ptr->NewIterator(options)));
 }
 
+std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions& options, ColumnFamilyHandle* column_family) {
+  if (db_ptr == nullptr) {
+    throw std::invalid_argument("db has been closed");
+  }
+  return std::unique_ptr<IteratorWrapper>(new IteratorWrapper(db_ptr->NewIterator(options, column_family)));
+}
 
 
 void init_db(py::module &);

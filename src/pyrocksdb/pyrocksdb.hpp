@@ -137,7 +137,7 @@ class py_DB {
     std::unique_ptr<Blob> Get(const ReadOptions& options, const std::string& key);
     std::unique_ptr<Blob> Get(const ReadOptions& options,
                             ColumnFamilyHandle* column_family, const std::string& key);
-                            
+
     Status Write(const WriteOptions& options, WriteBatch& updates);
     Status Delete(const WriteOptions& options, const std::string& key);
     Status Delete(const WriteOptions& options,
@@ -151,9 +151,10 @@ class py_DB {
     void Close();
     py::tuple CreateColumnFamily(const ColumnFamilyOptions& options, const std::string& column_family_name);
     std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions& options);
+    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions& options, ColumnFamilyHandle* column_family);
     //FIXME: python gc
     ~py_DB();
-    const std::string default_column_familiy_name();
+    const std::string default_column_familiy_name(); // maybe a typo? take a look pls
   private:
     DB* db_ptr;
 };
