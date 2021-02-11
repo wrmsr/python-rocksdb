@@ -315,6 +315,68 @@ def test_column_family():
     for cfh in cfhs:
         del cfh
 
+def test_iterator_column_family(db):
+    db = pyrocksdb.DB()
+    opts = pyrocksdb.Options()
+    opts.create_if_missing = True
+    tmp = tempfile.TemporaryDirectory()
+    s = db.open(opts, tmp.name)
+    assert s.ok()
+
+    copts = pyrocksdb.ColumnFamilyOptions()
+    s, cf = db.create_column_family(copts, "new_cf")
+    del cf
+    db.close()
+
+    cfd1 = pyrocksdb.ColumnFamilyDescriptor(pyrocksdb.DefaultColumnFamilyName, pyrocksdb.ColumnFamilyOptions())
+    cfd2 = pyrocksdb.ColumnFamilyDescriptor("new_cf", pyrocksdb.ColumnFamilyOptions())
+    cfds = pyrocksdb.VectorColumnFamilyDescriptor()
+    cfds.append(cfd1)
+    cfds.append(cfd2)
+    db_opts = pyrocksdb.DBOptions()
+    #  a = [1,2]
+    s, cfhs = db.open(db_opts, tmp.name, cfds)
+    assert(s.ok())
+    assert(len(cfhs) == 2)
+    assert(cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName)
+    assert(cfhs[1].get_name() =='new_cf')
+    wopts = pyrocksdb.WriteOptions()
+    ropts = pyrocksdb.ReadOptions()
+
+    s = {b'key1': b'value1', b'key2': b'value2', b'key3': b'value3'}
+    for k, v in s.items():
+        db.put(wopts, cfhs[1], k, v)
+
+    it = db.iterator(ropts, cfhs[1])
+    it.seek_to_first()
+    assert it.status().ok()
+    assert it.valid()
+    for k, v in s.items():
+        assert it.key() == k
+        assert it.value() == v
+        it.next()
+
+    assert not it.valid()
+
+    it.seek(b'key1')
+    assert it.valid()
+    assert it.key() == b'key1'
+    assert it.value() == b'value1'
+    it.seek(b'key2')
+    assert it.valid()
+    assert it.key() == b'key2'
+    assert it.value() == b'value2'
+
+    it.seek(b'key4')
+    assert not it.valid()
+
+    it.seek_for_prev(b'key0')
+    assert not it.valid()
+    it.seek_for_prev(b'key4')
+    assert it.valid()
+
+    del it
+
 def test_readonly():
     db = pyrocksdb.DB()
     opts = pyrocksdb.Options()
